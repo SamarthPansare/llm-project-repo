@@ -1,0 +1,25 @@
+# Ignore the virtual environment directory
+venv/
+
+# Ignore Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ignore local development files
+*.log
+*.sqlite3
+*.env
+.env
+
+# Ignore IDE specific files
+.vscode/
+.idea/
+
+# Ignore FAISS index file
+faiss_index.index
+
+# Ignore other common files
+.DS_Store
+*.swp
+*.swo

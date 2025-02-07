@@ -121,16 +121,19 @@ else:
     process_pdfs(data_dir)
 
 
-query = input("\nEnter your Query: ")
-results, distances = query_faiss(query)
-print("-" * 30)
-print(f"Top {len(results)} results retrieved from FAISS:\n")
-for i, (res, dist) in enumerate(zip(results, distances[0])):
-    print(f"{i+1}] {res} (distance: {dist})")
-print("-" * 30)
+while True:
+    query = input("\nEnter your Query: ")
+    results, distances = query_faiss(query)
+    print("-" * 30)
+    print("Results: ", results)
+    print("distances: ", distances)
+    print(f"Top {len(results)} results retrieved from FAISS:\n")
+    for i, (res, dist) in enumerate(zip(results, distances[0])):
+        print(f"{i+1}] {res} (distance: {dist})")
+    print("-" * 30)
 
-context = " ".join(results)
-response = query_deepseek(context, query)
-print("\n\n\nResponse From Deepseek:\n")
-print(response)
-print("-" * 30)
+    context = " ".join(results)
+    response = query_deepseek(context, query)
+    print("\n\n\nResponse From Deepseek:\n")
+    print(response)
+    print("-" * 30)

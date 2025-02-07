@@ -9,7 +9,6 @@ import os
 
 # Load a local sentence-transformers model
 model = SentenceTransformer('all-MiniLM-L6-v2')
-embeddings_list = []
 text_list = []
 
 dimension = 384  # Dimension of the embeddings
@@ -18,10 +17,14 @@ index = faiss.IndexFlatL2(dimension)
 
 # convert pdf to text using OCR
 def pdf_to_text(pdf_path):
-    images = convert_from_path(pdf_path)
     text = ""
-    for image in images:
-        text += pytesseract.image_to_string(image)
+    try:
+        for page in convert_from_path(pdf_path, dpi=150):
+            text += pytesseract.image_to_string(page)
+    except FileNotFoundError:
+        print(f"Error: File {pdf_path} not found.")
+    except Exception as e:
+        print(f"Error processing {pdf_path}: {e}")
     return text
 
 
@@ -44,13 +47,21 @@ def get_embeddings(text):
 
 # add chunks and their embedding to faiss
 def add_to_faiss_index(chunks):
+    new_entries = 0  # Count new entries added to the index
     for chunk in chunks:
+        if chunk in text_list:  # Check if the chunk already exists
+            continue
+
         embedding = get_embeddings(chunk)
-        embeddings_list.append(embedding)
         text_list.append(chunk)
         index.add(np.array([embedding], dtype=np.float32))
-    faiss.write_index(index, "faiss_index.index")
-    print("Faiss index updated and saved to disk. size: ", index.ntotal)
+        new_entries += 1
+
+    if new_entries > 0:
+        faiss.write_index(index, "faiss_index.index")
+        print(f"FAISS index updated and saved to disk. Size: {index.ntotal}")
+    else:
+        print("No new chunks added to FAISS index.")
     print("-" * 30)
 
 
@@ -68,13 +79,20 @@ def query_faiss(query, k=5):
 # query deepseek model to get refined results
 def query_deepseek(context, query):
     prompt = f"Context:\n{context} \nQuery:\n{query}"
-    result = subprocess.run(
-        ["ollama", "run", "deepseek-r1:1.5b"],
-        input = prompt,
-        stdout = subprocess.PIPE,
-        text = True
-    )
-    return result.stdout.strip()
+    try:
+        result = subprocess.run(
+            ["ollama", "run", "deepseek-r1:1.5b"],
+            input=prompt,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        if result.returncode != 0:
+            raise RuntimeError(f"DeepSeek error: {result.stderr.strip()}")
+        return result.stdout.strip()
+    except Exception as e:
+        print(f"Error querying DeepSeek: {e}")
+        return None
 
 
 # process the pdfs from the data directory

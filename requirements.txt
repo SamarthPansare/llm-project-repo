@@ -1,0 +1,5 @@
+pdf2image
+pytesseract
+faiss-cpu
+sentence-transformers
+numpy

@@ -1,5 +1,5 @@
 
-```markdown
+
 # Project Setup Guide
 
 This guide provides step-by-step instructions for setting up the project, including installing Ollama, pulling the `deepseek-r1:1.5b` model, setting up a Python virtual environment, and running the Python script.

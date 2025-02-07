@@ -80,5 +80,4 @@ python main.py
 ## Notes
 - Ensure you have Python 3.7 or higher installed.
 - For any issues with Ollama, refer to the [Ollama Documentation](https://ollama.com).
-```
 

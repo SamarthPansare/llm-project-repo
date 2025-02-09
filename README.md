@@ -72,7 +72,7 @@ pip install -r requirements.txt
 ## 6. Run the Python Script
 Execute the script using the following command:
 ```bash
-python main.py
+streamlit run app.py
 ```
 
 ---

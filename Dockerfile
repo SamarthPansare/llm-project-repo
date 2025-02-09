@@ -1,29 +1,36 @@
-FROM python:3.9-slim
+# Use a lightweight Ubuntu base image
+FROM ubuntu:22.04
 
-# set working dir as app
-WORKDIR /app
+# Set environment variables to avoid interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
 
-# install dependencies
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     tesseract-ocr \
     curl \
-    poppler-utils \   
+    poppler-utils \
+    python3 \
+    python3-pip \
     && rm -rf /var/lib/apt/lists/*
 
-# install ollama
-RUN curl -fsSL https://ollama.com/install.sh | sh  
-# Verify Ollama installation
-RUN ollama --version
+# Install Ollama
+RUN curl -fsSL https://ollama.com/install.sh | sh
 
+# Set the working directory
+WORKDIR /app
 
-# install python dependencies
+# Copy the requirements file and install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# copy files of this dir in container
+# Copy the rest of the application code
 COPY . .
 
-RUN echo "Starting Python Application"
-# run 
-ENTRYPOINT ["sh", "-c", "ollama serve & sleep 5 && python main.py"]
+# Expose the port for the Streamlit app
+EXPOSE 8051
 
+# Start Ollama service, pull the model, and run the Streamlit app
+CMD ollama serve & \
+    sleep 10 && \
+    ollama pull deepseek-r1:1.5b && \
+    streamlit run app.py --server.port 8051

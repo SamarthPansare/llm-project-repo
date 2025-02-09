@@ -29,32 +29,32 @@ if not is_data_dir_empty:
         st.sidebar.write(file_name)
 
 
+# File upload and processing logic
+if uploaded_files:
+    with st.spinner("Processing PDFs..."):
+        for uploaded_file in uploaded_files:
+            # Check if the file already exists in the data directory
+            file_path = os.path.join(data_dir, uploaded_file.name)
+            if uploaded_file.name in processed_files:
+                st.warning(f"File '{uploaded_file.name}' already exists in the data directory. Skipping processing.")
+                continue
+
+            # Save the uploaded file to the data directory
+            with open(file_path, "wb") as f:
+                f.write(uploaded_file.getbuffer())
+
+            # Process the PDF
+            text = pdf_to_text(file_path)
+            chunks = chunk_text(text)
+            add_to_faiss_index(chunks)
+            processed_files.append(uploaded_file.name)
+
+        st.success("PDFs processed and added to FAISS index.")
+
+
 # If the data directory is empty, prompt the user to upload files before querying
 if is_data_dir_empty:
     st.warning("The document repository is empty. Please upload PDF files to query.")
-
-    # File upload logic
-    if uploaded_files:
-        with st.spinner("Processing PDFs..."):
-            for uploaded_file in uploaded_files:
-                # Check if the file already exists in the data directory
-                file_path = os.path.join(data_dir, uploaded_file.name)
-                if uploaded_file.name in processed_files:
-                    st.warning(f"File '{uploaded_file.name}' already exists in the data directory. Skipping processing.")
-                    continue
-
-                # Save the uploaded file to the data directory
-                os.makedirs(data_dir, exist_ok=True)
-                with open(file_path, "wb") as f:
-                    f.write(uploaded_file.getbuffer())
-
-                # Process the PDF
-                text = pdf_to_text(file_path)
-                chunks = chunk_text(text)
-                add_to_faiss_index(chunks)
-                processed_files.append(uploaded_file.name)
-
-            st.success("PDFs processed and added to FAISS index.")
 
 
 st.header("Search the Document Repository")

@@ -15,7 +15,6 @@ RUN curl -fsSL https://ollama.com/install.sh | sh
 # Verify Ollama installation
 RUN ollama --version
 
-RUN ollama serve & sleep 5 && ollama pull deepseek-r1:1.5b
 
 # install python dependencies
 COPY requirements.txt .
